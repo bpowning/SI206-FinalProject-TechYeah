@@ -24,7 +24,24 @@ with open(path_to_file, 'w') as f:
     x = json.dumps(CACHE_DICTION)
     f.write(json.dumps(CACHE_DICTION))
 
+<<<<<<< HEAD
 # function to create a url based on the different parameters you want to search
 def create_base_url(description = "", location = "", lat = "", long = "", full_time = ""):
     base_url = "https://jobs.github.com/positions?" + 
 
+=======
+# functions to create a url based on the different parameters you want to search
+def url_by_location(location):
+    base_url = "https://jobs.github.com/positions?" + "location=" + location
+    return base_url
+
+def url_by_jobtype(description):
+    base_url = "https://jobs.github.com/positions?" + "description=" + description
+    return base_url
+
+def url_by_both(location, description):
+    base_url = "https://jobs.github.com/positions?" + "location=" + location + "&description=" + description
+    return base_url
+
+# function to get data from an API call
+>>>>>>> 8797668f814c803182516e441d830283cece0eeb
