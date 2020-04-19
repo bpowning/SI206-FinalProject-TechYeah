@@ -1,6 +1,9 @@
 import json
 import os
 import requests
+import sqlite3
+import re
+from bs4 import BeautifulSoup
 
 # get directory path and create cache file
 path = os.path.dirname(os.path.realpath(__file__))
@@ -23,9 +26,13 @@ def write_cache(cache_file, cache_dict):
     file = open(file_path, 'w')
     file.write(json.dumps(cache_dict))
 
-# functions to create a url based on the different parameters you want to search
-def url_by_both(location, description = "developer"):
-    base_url = "https://jobs.github.com/positions.json?" + "location=" + location + "&description=" + description
+# functions to create a url based on location
+def url_by_location(location):
+    base_url = "https://jobs.github.com/positions.json?" + "location=" + location
+    return base_url
+
+def url_by_description(description):
+    base_url = "https://jobs.github.com/positions.json?" + "description=" + description
     return base_url
 
 # get data from an API call
@@ -40,7 +47,59 @@ def get_data(base_url, cache_file = jobs_file):
         return cache_dict[base_url]
 
 # add data to cache_jobs.json
-cities = ["newyork", "boston", "chicago", "sanfrancisco", "losangeles", "seattle"]
+cities = ["newyork", "boston", "chicago", "sanfrancisco", "losangeles", "seattle", "phillidelphia", "newjersey", "detroit", "texas"]
 for city in cities:
-    base_url = url_by_both(city)
+    base_url = url_by_location(city)
     get_data(base_url)
+
+types = ["engineer", "developer", "remote"]
+for typ in types:
+    base_url = url_by_description(typ)
+    get_data(base_url)
+
+# read the cache file
+job_data = read_cache('cache_jobs.json')
+
+# set up the database
+path = os.path.dirname(os.path.abspath(__file__))
+conn = sqlite3.connect(path + '/' + "githubjobs.db")
+cur = conn.cursor()
+
+# set up a table called Job Type for all types of job listings
+job_types = []
+for city in job_data:
+    for job in job_data[city]:
+        if job['title'] not in job_types:
+            job_types.append(job['title'])
+
+cur.execute("DROP TABLE IF EXISTS JobType")
+cur.execute("CREATE TABLE IF NOT EXISTS JobType (id INTEGER PRIMARY KEY, type TEXT)")
+
+for i in range(len(job_types)):
+    cur.execute("INSERT INTO JobType (id,type) VALUES (?,?)",(i,job_types[i]))
+conn.commit()
+
+# set up a table called JobListings for all 2020 job listings
+cur.execute("DROP TABLE IF EXISTS JobListings")
+cur.execute("CREATE TABLE IF NOT EXISTS JobListings (job_id TEXT PRIMARY KEY, company TEXT, location TEXT, type_id INTEGER, date INTEGER, application TEXT)")
+
+job_ids = [] # making sure there is no repeat of jobs
+for city in job_data:
+    for job in job_data[city]:
+        if job['id'] not in job_ids:
+            job_id = job['id']
+            company = job['company']
+            location = job['location']
+            date = int(job['created_at'].split(' ')[-1])
+
+            type_name = job['title']
+            cur.execute("SELECT id FROM JobType WHERE type = ?", (type_name,))
+            type_id = cur.fetchone()[0]
+
+            soup = BeautifulSoup(job['how_to_apply'], 'html.parser')
+            application = soup.get_text()
+
+            cur.execute("INSERT INTO JobListings (job_id, company, location, type_id, date, application) VALUES (?,?,?,?,?,?)", (job_id, company, location, type_id, date, application))
+            job_ids.append(job_id)
+            
+conn.commit()
