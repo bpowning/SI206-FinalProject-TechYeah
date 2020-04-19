@@ -1,10 +1,6 @@
-import sqlite3
 import json
 import os
 import requests
-import urllib.request, urllib.parse, urllib.error
-
-# https://jobs.github.com/api
 
 # get directory path and create cache file
 path = os.path.dirname(os.path.realpath(__file__))
@@ -28,15 +24,7 @@ def write_cache(cache_file, cache_dict):
     file.write(json.dumps(cache_dict))
 
 # functions to create a url based on the different parameters you want to search
-def url_by_location(location):
-    base_url = "https://jobs.github.com/positions.json?" + "location=" + location
-    return base_url
-
-def url_by_jobtype(description):
-    base_url = "https://jobs.github.com/positions.json?" + "description=" + description
-    return base_url
-
-def url_by_both(location, description):
+def url_by_both(location, description = "developer"):
     base_url = "https://jobs.github.com/positions.json?" + "location=" + location + "&description=" + description
     return base_url
 
@@ -51,5 +39,8 @@ def get_data(base_url, cache_file = jobs_file):
         write_cache(cache_file, cache_dict)
         return cache_dict[base_url]
 
-url = url_by_location("newyork")
-get_data(url)
+# add data to cache_jobs.json
+cities = ["newyork", "boston", "chicago", "sanfrancisco", "losangeles", "seattle"]
+for city in cities:
+    base_url = url_by_both(city)
+    get_data(base_url)
