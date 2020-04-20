@@ -80,7 +80,8 @@ conn = sqlite3.connect(path + '/'+ "NYT.db")
 cur = conn.cursor()
 
 # set up "articlesxmonth" for all articles by month
-# and "covidarticlesxmonth" for all covid articles by month
+# set up "covidarticlesxmonth" for all covid articles by month
+# set up "percentcovidarticles" for percentage of articles about corona
 months = ["oct", "nov", "dec", "jan", "feb", "mar", "apr"]
 articlesxmonth = []
 covidarticlesxmonth=[]
@@ -100,7 +101,6 @@ for url in nyt_data:
         url_break += 1
 for i in range(len(articlesxmonth)):
     percent_covidxmonth = (covidarticlesxmonth[i]/articlesxmonth[i])
-    percent_covidxmonth = format(percent_covidxmonth, "%")
     percentcovidarticles.append(percent_covidxmonth)
 
 cur.execute("DROP TABLE IF EXISTS ArticlesxMonth")
