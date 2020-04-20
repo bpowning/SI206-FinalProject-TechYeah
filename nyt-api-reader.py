@@ -80,10 +80,14 @@ for url in nyt_data:
         x = nyt_data[url]['response']['meta']['hits']
         articlesxmonth.append(x)
         url_break += 1
+    # need coronavirus keyword lookup
+    # need to calculate percentage
 
 cur.execute("DROP TABLE IF EXISTS ArticlesxMonth")
-cur.execute("CREATE TABLE IF NOT EXISTS ArticlesxMonth (id INTEGER PRIMARY KEY, hits INTEGER)")
+cur.execute("CREATE TABLE IF NOT EXISTS ArticlesxMonth (month INTEGER PRIMARY KEY, total_hits INTEGER)")
+# ^^ coronavirus_hits INTEGER, percent_corona_articles FLOAT
 
 for i in range(len(articlesxmonth)):
-    cur.execute("INSERT INTO ArticlesxMonth (id, hits) VALUES (?,?)", (i, articlesxmonth[i]))
+    cur.execute("INSERT INTO ArticlesxMonth (month, total_hits) VALUES (?,?)", (i, articlesxmonth[i]))
+    # ^^ coronavirus_hits, percent_corona_articles
 conn.commit()
