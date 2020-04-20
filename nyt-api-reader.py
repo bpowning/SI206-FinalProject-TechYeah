@@ -79,12 +79,12 @@ path = os.path.dirname(os.path.abspath(__file__))
 conn = sqlite3.connect(path + '/'+ "NYT.db")
 cur = conn.cursor()
 
-# set up "articlesxmonth" for all articles by month
-# set up "covidarticlesxmonth" for all covid articles by month
-# set up "percentcovidarticles" for percentage of articles about corona
+# set up "articlesxmonth" list for all articles by month
+# set up "covidarticlesxmonth" list for all covid articles by month
+# set up "percentcovidarticles" list for percentage of articles about corona
 months = ["oct", "nov", "dec", "jan", "feb", "mar", "apr"]
 articlesxmonth = []
-covidarticlesxmonth=[]
+covidarticlesxmonth = []
 percentcovidarticles = []
 percent_covidxmonth = 0.000000
 url_break = 0
@@ -103,9 +103,38 @@ for i in range(len(articlesxmonth)):
     percent_covidxmonth = (covidarticlesxmonth[i]/articlesxmonth[i])
     percentcovidarticles.append(percent_covidxmonth)
 
-cur.execute("DROP TABLE IF EXISTS ArticlesxMonth")
-cur.execute("CREATE TABLE IF NOT EXISTS ArticlesxMonth (month_id INTEGER PRIMARY KEY, month STRING, total_hits INTEGER, coronavirus_hits INTEGER, percent_of_covid_articles FLOAT)")
+# create NYTArticleData table to hold all data about coronavirus articles
+cur.execute("DROP TABLE IF EXISTS NYTArticleData")
+cur.execute("CREATE TABLE IF NOT EXISTS NYTArticleData (month_id INTEGER PRIMARY KEY, month STRING, total_hits INTEGER, coronavirus_hits INTEGER, percent_of_covid_articles FLOAT)")
 
+# insert data into NYTArticleData table
 for i in range(len(articlesxmonth)):
-    cur.execute("INSERT INTO ArticlesxMonth (month_id, month, total_hits, coronavirus_hits, percent_of_covid_articles) VALUES (?,?,?,?,?)", (i, months[i], articlesxmonth[i], covidarticlesxmonth[i], percentcovidarticles[i]))
+    cur.execute("INSERT INTO NYTArticleData (month_id, month, total_hits, coronavirus_hits, percent_of_covid_articles) VALUES (?,?,?,?,?)", (i, months[i], articlesxmonth[i], covidarticlesxmonth[i], percentcovidarticles[i]))
+conn.commit()
+
+# set up lists for all NYT Coronavirus Articles
+article_urls = []
+article_headlines = []
+article_pub_dates = []
+article_snippets = []
+url_break = 0
+for url in nyt_data:
+    if url_break < 7:
+        for doc in nyt_data[url]['response']['docs']:
+            for keyword in doc['keywords']:
+                if keyword['value'] == 'Coronavirus (2019-nCoV)':
+                    article_urls.append(doc['web_url'])
+                    article_pub_dates.append(doc['pub_date'])
+                    article_snippets.append(doc['snippet'])
+                    headline_transition = doc['headline']['main']
+                    article_headlines.append(headline_transition)
+        url_break += 1
+
+# create NYTCoronavirusArticles table to hold info about all articles with keyword coronavirus
+cur.execute("DROP TABLE IF EXISTS NYTCoronavirusArticles")
+cur.execute("CREATE TABLE IF NOT EXISTS NYTCoronavirusArticles (article_id INTEGER PRIMARY KEY, url STRING, headline STRING, pub_date STRING, snippet STRING)")
+
+# insert data into NYTCoronavirusArticles table
+for i in range(len(article_urls)):
+    cur.execute("INSERT INTO NYTCoronavirusArticles (article_id, url, headline, pub_date, snippet) VALUES (?,?,?,?,?)", (i, article_urls[i], article_headlines[i], article_pub_dates[i], article_snippets[i]))
 conn.commit()
