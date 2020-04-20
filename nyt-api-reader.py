@@ -3,7 +3,6 @@ import json
 import os
 import requests
 import re
-from bs4 import BeautifulSoup
 
 # get directory path and create cache file
 path = os.path.dirname(os.path.realpath(__file__))
@@ -31,7 +30,7 @@ BASE CALL
 https://api.nytimes.com/svc/archive/v1/2019/1.json?api-key=yourkey
 """
 
-# NYT API key and specific info
+# NYT API key and url getting specific info
 API_KEY = "GVoB95VLbFRPEUbpesKu3DqCTVritOM3"
 
 def url_for_month_2k19(month):
@@ -40,6 +39,10 @@ def url_for_month_2k19(month):
 
 def url_for_month_2k20(month):
     base_url = "https://api.nytimes.com/svc/archive/v1/2020/" + month + ".json?api-key=" + API_KEY
+    return base_url
+
+def url_for_article_search():
+    base_url = "https://api.nytimes.com/svc/search/v2/articlesearch.json?q=election&api-key=" + API_KEY
     return base_url
 
 # get data from NYT API Call
@@ -73,6 +76,7 @@ conn = sqlite3.connect(path + '/'+ "NYT.db")
 cur = conn.cursor()
 
 # set up "ArticlesxMonth" for all articles by month
+months = ["oct", "nov", "dec", "jan", "feb", "mar", "apr"]
 articlesxmonth = []
 url_break = 0
 for url in nyt_data:
@@ -84,10 +88,10 @@ for url in nyt_data:
     # need to calculate percentage
 
 cur.execute("DROP TABLE IF EXISTS ArticlesxMonth")
-cur.execute("CREATE TABLE IF NOT EXISTS ArticlesxMonth (month INTEGER PRIMARY KEY, total_hits INTEGER)")
+cur.execute("CREATE TABLE IF NOT EXISTS ArticlesxMonth (month_id INTEGER PRIMARY KEY, month STRING, total_hits INTEGER)")
 # ^^ coronavirus_hits INTEGER, percent_corona_articles FLOAT
 
 for i in range(len(articlesxmonth)):
-    cur.execute("INSERT INTO ArticlesxMonth (month, total_hits) VALUES (?,?)", (i, articlesxmonth[i]))
+    cur.execute("INSERT INTO ArticlesxMonth (month_id, month, total_hits) VALUES (?,?,?)", (i, months[i], articlesxmonth[i]))
     # ^^ coronavirus_hits, percent_corona_articles
 conn.commit()
