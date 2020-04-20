@@ -71,3 +71,19 @@ nyt_data = read_cache("nyt_covid_data.json")
 path = os.path.dirname(os.path.abspath(__file__))
 conn = sqlite3.connect(path + '/'+ "NYT.db")
 cur = conn.cursor()
+
+# set up "ArticlesxMonth" for all articles by month
+articlesxmonth = []
+url_break = 0
+for url in nyt_data:
+    if url_break < 7:
+        x = nyt_data[url]['response']['meta']['hits']
+        articlesxmonth.append(x)
+        url_break += 1
+
+cur.execute("DROP TABLE IF EXISTS ArticlesxMonth")
+cur.execute("CREATE TABLE IF NOT EXISTS ArticlesxMonth (id INTEGER PRIMARY KEY, hits INTEGER)")
+
+for i in range(len(articlesxmonth)):
+    cur.execute("INSERT INTO ArticlesxMonth (id, hits) VALUES (?,?)", (i, articlesxmonth[i]))
+conn.commit()
