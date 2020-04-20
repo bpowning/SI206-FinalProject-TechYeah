@@ -26,11 +26,15 @@ def write_cache(cache_file, cache_dict):
     file.write(json.dumps(cache_dict))
 
 """
-BASE CALL
+BASE CALL FOR NYT ARCHIVE API
 https://api.nytimes.com/svc/archive/v1/2019/1.json?api-key=yourkey
+
+BASE CALL FOR NYT ARTICLE SEARCH API
+"https://api.nytimes.com/svc/search/v2/articlesearch.json?q=election&api-key=yourkey"
 """
 
-# NYT API key and url getting specific info
+# NYT API key and URL for Archive from 2019 and 2020
+# and Article Search for term "________"
 API_KEY = "GVoB95VLbFRPEUbpesKu3DqCTVritOM3"
 
 def url_for_month_2k19(month):
@@ -75,23 +79,33 @@ path = os.path.dirname(os.path.abspath(__file__))
 conn = sqlite3.connect(path + '/'+ "NYT.db")
 cur = conn.cursor()
 
-# set up "ArticlesxMonth" for all articles by month
+# set up "articlesxmonth" for all articles by month
+# and "covidarticlesxmonth" for all covid articles by month
 months = ["oct", "nov", "dec", "jan", "feb", "mar", "apr"]
 articlesxmonth = []
+covidarticlesxmonth=[]
+percentcovidarticles = []
+percent_covidxmonth = 0.000000
 url_break = 0
 for url in nyt_data:
     if url_break < 7:
         x = nyt_data[url]['response']['meta']['hits']
         articlesxmonth.append(x)
+        num_coronavirus_articles = 0
+        for doc in nyt_data[url]['response']['docs']:
+            for keyword in doc['keywords']:
+                if keyword['value'] == 'Coronavirus (2019-nCoV)':
+                    num_coronavirus_articles += 1
+        covidarticlesxmonth.append(num_coronavirus_articles)
         url_break += 1
-    # need coronavirus keyword lookup
-    # need to calculate percentage
+for i in range(len(articlesxmonth)):
+    percent_covidxmonth = (covidarticlesxmonth[i]/articlesxmonth[i])
+    percent_covidxmonth = format(percent_covidxmonth, "%")
+    percentcovidarticles.append(percent_covidxmonth)
 
 cur.execute("DROP TABLE IF EXISTS ArticlesxMonth")
-cur.execute("CREATE TABLE IF NOT EXISTS ArticlesxMonth (month_id INTEGER PRIMARY KEY, month STRING, total_hits INTEGER)")
-# ^^ coronavirus_hits INTEGER, percent_corona_articles FLOAT
+cur.execute("CREATE TABLE IF NOT EXISTS ArticlesxMonth (month_id INTEGER PRIMARY KEY, month STRING, total_hits INTEGER, coronavirus_hits INTEGER, percent_of_covid_articles FLOAT)")
 
 for i in range(len(articlesxmonth)):
-    cur.execute("INSERT INTO ArticlesxMonth (month_id, month, total_hits) VALUES (?,?,?)", (i, months[i], articlesxmonth[i]))
-    # ^^ coronavirus_hits, percent_corona_articles
+    cur.execute("INSERT INTO ArticlesxMonth (month_id, month, total_hits, coronavirus_hits, percent_of_covid_articles) VALUES (?,?,?,?,?)", (i, months[i], articlesxmonth[i], covidarticlesxmonth[i], percentcovidarticles[i]))
 conn.commit()
