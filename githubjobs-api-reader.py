@@ -66,22 +66,17 @@ conn = sqlite3.connect(path + '/' + "githubjobs.db")
 cur = conn.cursor()
 
 # set up a table called Job Type for all types of job listings
-job_types = []
-for city in job_data:
-    for job in job_data[city]:
-        if job['title'] not in job_types:
-            job_types.append(job['title'])
-
 cur.execute("DROP TABLE IF EXISTS JobType")
 cur.execute("CREATE TABLE IF NOT EXISTS JobType (id INTEGER PRIMARY KEY, type TEXT)")
 
+job_types = ["analyst", "python", "developer", "engineer"]
 for i in range(len(job_types)):
     cur.execute("INSERT INTO JobType (id,type) VALUES (?,?)",(i,job_types[i]))
 conn.commit()
 
 # set up a table called JobListings for all 2020 job listings
 cur.execute("DROP TABLE IF EXISTS JobListings")
-cur.execute("CREATE TABLE IF NOT EXISTS JobListings (job_id TEXT PRIMARY KEY, company TEXT, location TEXT, type_id INTEGER, date INTEGER, application TEXT)")
+cur.execute("CREATE TABLE IF NOT EXISTS JobListings (job_id TEXT PRIMARY KEY, company TEXT, location TEXT, type_id INTEGER, date INTEGER, description TEXT, application TEXT)")
 
 job_ids = [] # making sure there is no repeat of jobs
 for city in job_data:
@@ -92,14 +87,26 @@ for city in job_data:
             location = job['location']
             date = int(job['created_at'].split(' ')[-1])
 
-            type_name = job['title']
-            cur.execute("SELECT id FROM JobType WHERE type = ?", (type_name,))
+            type_name = job['title'].lower()
+            if "analyst" in type_name:
+                typ = "analyst"
+            elif "python" in type_name:
+                typ = "python"
+            elif "engineer" in type_name:
+                typ = "engineer"
+            elif "developer" in type_name:
+                typ = "developer"
+            
+            cur.execute("SELECT id FROM JobType WHERE type = ?", (typ,))
             type_id = cur.fetchone()[0]
+
+            soup = BeautifulSoup(job['description'], 'html.parser')
+            description = soup.get_text()
 
             soup = BeautifulSoup(job['how_to_apply'], 'html.parser')
             application = soup.get_text()
 
-            cur.execute("INSERT INTO JobListings (job_id, company, location, type_id, date, application) VALUES (?,?,?,?,?,?)", (job_id, company, location, type_id, date, application))
+            cur.execute("INSERT INTO JobListings (job_id, company, location, type_id, date, description, application) VALUES (?,?,?,?,?,?,?)", (job_id, company, location, type_id, date, description, application))
             job_ids.append(job_id)
             
 conn.commit()
