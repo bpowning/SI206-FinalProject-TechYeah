@@ -60,6 +60,9 @@ for typ in types:
 # read the cache file
 job_data = read_cache('cache_jobs.json')
 
+
+# =======================================================================================================================================================================================================================================================
+
 # set up the database
 path = os.path.dirname(os.path.abspath(__file__))
 conn = sqlite3.connect(path + '/' + "githubjobs.db")
@@ -76,17 +79,22 @@ conn.commit()
 
 # set up a table called JobListings for all 2020 job listings
 cur.execute("DROP TABLE IF EXISTS JobListings")
-cur.execute("CREATE TABLE IF NOT EXISTS JobListings (job_id TEXT PRIMARY KEY, company TEXT, location TEXT, type_id INTEGER, date INTEGER, description TEXT, application TEXT)")
+cur.execute("CREATE TABLE IF NOT EXISTS JobListings (job_id TEXT PRIMARY KEY, title TEXT, company TEXT, location TEXT, type_id INTEGER, date TEXT, description TEXT, application TEXT, remote BOOL)")
 
 job_ids = [] # making sure there is no repeat of jobs
 for city in job_data:
     for job in job_data[city]:
         if job['id'] not in job_ids:
             job_id = job['id']
+            title = job['title']
             company = job['company']
             location = job['location']
-            date = int(job['created_at'].split(' ')[-1])
+            
+            # date is a string of month, year
+            date_list = job['created_at'].split()
+            date = date_list[1] + ", " + date_list[-1]
 
+            # type is 
             type_name = job['title'].lower()
             if "analyst" in type_name:
                 typ = "analyst"
@@ -106,7 +114,93 @@ for city in job_data:
             soup = BeautifulSoup(job['how_to_apply'], 'html.parser')
             application = soup.get_text()
 
-            cur.execute("INSERT INTO JobListings (job_id, company, location, type_id, date, description, application) VALUES (?,?,?,?,?,?,?)", (job_id, company, location, type_id, date, description, application))
+            if 'remote' in description or 'remote' in title:
+                remote = True
+            else:
+                remote = False
+
+            cur.execute("INSERT INTO JobListings (job_id, title, company, location, type_id, date, description, application, remote) VALUES (?,?,?,?,?,?,?,?,?)", (job_id, title, company, location, type_id, date, description, application, remote))
             job_ids.append(job_id)
             
 conn.commit()
+
+
+# =======================================================================================================================================================================================================================================================
+
+# functions for calculations
+
+# takes a str month and an int year and returns a list of the job titles 
+def get_listings_by_date(month, year, cur= cur, conn  = conn):
+    month_code = month[:3] + ", " + str(year)
+    cur.execute("SELECT title FROM JobListings WHERE date = ?", (month_code,))
+    conn.commit()
+    return cur.fetchall()
+
+# takes a str month and an int year and returns a list of remote job titles
+def remote_listings_by_date(month, year, cur= cur, conn  = conn):
+    month_code = month[:3] + ", " + str(year)
+    cur.execute("SELECT title FROM JobListings WHERE remote = 1 AND date = ?", (month_code,))
+    return cur.fetchall()
+
+# get the remote total listing by month 
+def remote_total_by_month(month, year):
+    return len(remote_listings_by_date(month, year))
+
+# returns a list of the totals in month order
+def month_totals_list(month_list, year):
+    lst = []
+    for month in month_list:
+        lst.append(remote_total_by_month(month, year))
+    return lst
+
+# returns the yearly remote total
+def yearly_total(month_list, year):
+    total = 0
+    lst = month_totals_list(month_list, year)
+    for num in lst:
+        total += num
+    return total
+
+# returns total remote listings
+def get_total_remote():
+    cur.execute("SELECT title FROM JobListings WHERE remote = 1")
+    return len(cur.fetchall())
+
+# returns percentage of remote listings
+def get_percent_remote():
+    total_remote = get_total_remote()
+    cur.execute("Select * FROM JobListings")
+    total_listings = len(cur.fetchall())
+    return total_remote/total_listings
+
+# returns job listings by job type
+def get_listings_by_type(typ):
+    cur.execute("SELECT JobListings.title FROM JobListings, JobType WHERE JobType.id = JobListings.type_id AND JobType.type = ?", (typ,))
+    return cur.fetchall()
+
+# returns number of job listings by job type
+def num_listings_by_type(typ):
+    return len(get_listings_by_type(typ))
+
+
+#=======================================================================================================================================================================================================================================================
+
+# code to use these functions to calculate stuff from the data base
+
+months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+
+remote2018_list = month_totals_list(months, 2018)
+remote2019_list = month_totals_list(months, 2019)
+remote2020_list = month_totals_list(months[:4], 2020)
+
+remote2018 = yearly_total(months, 2018)
+remote2019 = yearly_total(months, 2019)
+remote2020 = yearly_total(months[:4], 2020)
+
+total_remote = get_total_remote()
+percent_remote = get_percent_remote()
+
+total_analyst = num_listings_by_type("analyst")
+total_python = num_listings_by_type("python")
+total_developer = num_listings_by_type("developer")
+total_engineer = num_listings_by_type("analyst")
