@@ -72,7 +72,7 @@ nyt_data = read_cache("nyt_covid_data.json")
 
 # set up database
 path = os.path.dirname(os.path.abspath(__file__))
-conn = sqlite3.connect(path + '/'+ "NYT.db")
+conn = sqlite3.connect(path + '/'+ "coronavirus.db")
 cur = conn.cursor()
 
 # set up lists for all NYT Coronavirus Articles
