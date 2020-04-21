@@ -4,6 +4,7 @@ import requests
 import sqlite3
 import re
 from bs4 import BeautifulSoup
+# import matplotlib.pyplot as plt
 
 # get directory path and create cache file
 path = os.path.dirname(os.path.realpath(__file__))
@@ -65,7 +66,7 @@ job_data = read_cache('cache_jobs.json')
 
 # set up the database
 path = os.path.dirname(os.path.abspath(__file__))
-conn = sqlite3.connect(path + '/' + "githubjobs.db")
+conn = sqlite3.connect(path + '/' + "coronavirus.db")
 cur = conn.cursor()
 
 # set up a table called Job Type for all types of job listings
@@ -204,3 +205,16 @@ total_analyst = num_listings_by_type("analyst")
 total_python = num_listings_by_type("python")
 total_developer = num_listings_by_type("developer")
 total_engineer = num_listings_by_type("analyst")
+
+# =======================================================================================================================================================================================================================================================
+
+# creating visualizations
+
+#fig = plt.figure(figsize=(10,5))
+#ax = fig.add_subplot(111)
+#ax.bar(months[:4], remote2020_list, color = 'lightblue')
+#ax.set_xlabel('month')
+#ax.set_ylabel('number of remote job listings')
+#ax.set_title('Remote job listings in 2020 by month ')
+#fig.savefig('test.png')
+#plt.show()
