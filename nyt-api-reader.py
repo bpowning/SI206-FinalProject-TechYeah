@@ -77,13 +77,6 @@ cur = conn.cursor()
 
 # set up lists for all NYT Coronavirus Articles
 months = ["oct", "nov", "dec", "jan", "feb", "mar", "apr"]
-date_dict = {'https://api.nytimes.com/svc/archive/v1/2019/10.json?api-key=GVoB95VLbFRPEUbpesKu3DqCTVritOM3': '2019-10',
-             'https://api.nytimes.com/svc/archive/v1/2020/11.json?api-key=GVoB95VLbFRPEUbpesKu3DqCTVritOM3': '2019-11',
-             'https://api.nytimes.com/svc/archive/v1/2020/12.json?api-key=GVoB95VLbFRPEUbpesKu3DqCTVritOM3': '2019-12',
-             'https://api.nytimes.com/svc/archive/v1/2020/1.json?api-key=GVoB95VLbFRPEUbpesKu3DqCTVritOM3': '2020-01',
-             'https://api.nytimes.com/svc/archive/v1/2020/2.json?api-key=GVoB95VLbFRPEUbpesKu3DqCTVritOM3': '2020-02',
-             'https://api.nytimes.com/svc/archive/v1/2020/3.json?api-key=GVoB95VLbFRPEUbpesKu3DqCTVritOM3': '2020-03',
-             'https://api.nytimes.com/svc/archive/v1/2020/4.json?api-key=GVoB95VLbFRPEUbpesKu3DqCTVritOM3': '2020-04'}
 articlesxmonth = []
 covidarticlesxmonth = []
 percentcovidarticles = []
@@ -91,6 +84,8 @@ percent_covidxmonth = 0.000000
 article_urls = []
 article_headlines = []
 article_pub_dates = []
+all_article_simple_pub_dates = []
+cv_article_simple_pub_dates = []
 article_snippets = []
 type_of_post = []
 url_break = 0
@@ -98,64 +93,57 @@ for url in nyt_data:
     if url_break < 7:
         x = nyt_data[url]['response']['meta']['hits']
         articlesxmonth.append(x)
-        num_coronavirus_articles = 0
         for doc in nyt_data[url]['response']['docs']:
             type_of_post.append(doc['document_type'])
+            all_article_simple_pub_dates.append((doc['pub_date'])[0:7])
             for keyword in doc['keywords']:
                 if keyword['value'] == 'Coronavirus (2019-nCoV)':
                     if (doc['web_url'] not in article_urls) and (doc['headline']['main'] not in article_headlines) and (doc['snippet'] not in article_snippets) and (doc['pub_date'] not in article_pub_dates):
                         article_urls.append(doc['web_url'])
                         article_pub_dates.append(doc['pub_date'])
+                        cv_article_simple_pub_dates.append((doc['pub_date'])[0:7])
                         article_snippets.append(doc['snippet'])
                         headline_transition = doc['headline']['main']
                         article_headlines.append(headline_transition)
-                        check_year_and_month = (doc['pub_date'])[0:7]
-                        if date_dict[url] == check_year_and_month:
-                            num_coronavirus_articles += 1
-        covidarticlesxmonth.append(num_coronavirus_articles)
         url_break += 1
-for i in range(len(articlesxmonth)):
-    percent_covidxmonth = (covidarticlesxmonth[i]/articlesxmonth[i])
-    percentcovidarticles.append(percent_covidxmonth)
 
 # create NYTCoronavirusArticles table to hold info about all articles with keyword coronavirus
 cur.execute("DROP TABLE IF EXISTS NYTCoronavirusArticles")
-cur.execute("CREATE TABLE IF NOT EXISTS NYTCoronavirusArticles (article_id INTEGER PRIMARY KEY, url STRING, headline STRING, pub_date STRING, snippet STRING, post_type STRING)")
+cur.execute("CREATE TABLE IF NOT EXISTS NYTCoronavirusArticles (article_id INTEGER PRIMARY KEY, url STRING, headline STRING, pub_date STRING, pub_date_simple STRING, snippet STRING, post_type STRING)")
 
 # insert data into NYTCoronavirusArticles table
 for i in range(len(article_urls)):
-    cur.execute("INSERT INTO NYTCoronavirusArticles (article_id, url, headline, pub_date, snippet, post_type) VALUES (?,?,?,?,?,?)", (i, article_urls[i], article_headlines[i], article_pub_dates[i], article_snippets[i], type_of_post[i]))
+    cur.execute("INSERT INTO NYTCoronavirusArticles (article_id, url, headline, pub_date, pub_date_simple, snippet, post_type) VALUES (?,?,?,?,?,?,?)", (i, article_urls[i], article_headlines[i], article_pub_dates[i], cv_article_simple_pub_dates[i], article_snippets[i], type_of_post[i]))
 conn.commit()
-
-"""
-# set up "articlesxmonth" list for all articles by month
-# set up "covidarticlesxmonth" list for all covid articles by month
-# set up "percentcovidarticles" list for percentage of articles about corona
-months = ["oct", "nov", "dec", "jan", "feb", "mar", "apr"]
-articlesxmonth = []
-covidarticlesxmonth = []
-percentcovidarticles = []
-percent_covidxmonth = 0.000000
-url_break = 0
-for url in nyt_data:
-    if url_break < 7:
-        x = nyt_data[url]['response']['meta']['hits']
-        articlesxmonth.append(x)
-        num_coronavirus_articles = 0
-        for doc in nyt_data[url]['response']['docs']:
-            for keyword in doc['keywords']:
-                if keyword['value'] == 'Coronavirus (2019-nCoV)':
-                        num_coronavirus_articles += 1
-        covidarticlesxmonth.append(num_coronavirus_articles)
-        url_break += 1
-for i in range(len(articlesxmonth)):
-    percent_covidxmonth = (covidarticlesxmonth[i]/articlesxmonth[i])
-    percentcovidarticles.append(percent_covidxmonth)
-"""
 
 # create NYTArticleData table to hold all data about coronavirus articles
 cur.execute("DROP TABLE IF EXISTS NYTArticleData")
 cur.execute("CREATE TABLE IF NOT EXISTS NYTArticleData (month_id INTEGER PRIMARY KEY, month STRING, total_hits INTEGER, coronavirus_hits INTEGER, percent_of_covid_articles FLOAT)")
+
+# get simple dates from all articles in NYT Data
+# should get following list:
+# simple_date_list = ['2019-10', '2019-11', '2019-12', '2020-01', '2020-02', '2020-03', '2020-04']
+simple_date_list = []
+for simple_date in all_article_simple_pub_dates:
+    if simple_date not in simple_date_list:
+        simple_date_list.append(simple_date)
+
+# Calculations to get number of articles by month with matching simple date
+def getNYTCoronaArticlesNumberbyMonth(chosen_pub_date, cur, conn):
+    cur.execute("SELECT url, headline, pub_date, pub_date_simple, snippet, post_type from NYTCoronavirusArticles WHERE (pub_date_simple == ?)", (chosen_pub_date,))
+    corona_arts_bymonth = cur.fetchall()
+    conn.commit()
+    return corona_arts_bymonth
+
+# add articles with keyword 'Coronavirus (2019-nCoV)' to covidarticlesxmonth by specific month
+for date in simple_date_list:
+    list_of_arts = getNYTCoronaArticlesNumberbyMonth(date, cur, conn)
+    covidarticlesxmonth.append(len(list_of_arts))
+
+# create percentages list based off of covidarticlesxmonth[i]
+for i in range(len(articlesxmonth)):
+    percent_covidxmonth = (covidarticlesxmonth[i]/articlesxmonth[i])
+    percentcovidarticles.append(percent_covidxmonth)
 
 # insert data into NYTArticleData table
 for i in range(len(articlesxmonth)):
