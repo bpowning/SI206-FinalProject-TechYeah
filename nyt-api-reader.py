@@ -87,15 +87,18 @@ post_pub_dates = []
 all_post_simple_pub_dates = []
 cv_post_simple_pub_dates = []
 post_snippets = []
-type_of_post = []
+cv_type_of_post = []
 # url_break used to stop url loop before it hits error handling urls (Error 400)
 url_break = 0
+
+# collect total number of posts per month and all simple_pub_dates for all articles
+# collect url, headline, pub_date, simple_pub_date, snippet and post_type for each article with
+# the keyword 'Coronavirus (2019-nCoV)'
 for url in nyt_data:
     if url_break < 7:
         x = nyt_data[url]['response']['meta']['hits']
         postsxmonth.append(x)
         for doc in nyt_data[url]['response']['docs']:
-            type_of_post.append(doc['document_type'])
             all_post_simple_pub_dates.append((doc['pub_date'])[0:7])
             for keyword in doc['keywords']:
                 if keyword['value'] == 'Coronavirus (2019-nCoV)':
@@ -106,6 +109,7 @@ for url in nyt_data:
                         post_snippets.append(doc['snippet'])
                         headline_transition = doc['headline']['main']
                         post_headlines.append(headline_transition)
+                        cv_type_of_post.append(doc['document_type'])
         url_break += 1
 
 # create NYTCoronavirusPosts table to hold info about all posts with keyword coronavirus
@@ -114,7 +118,7 @@ cur.execute("CREATE TABLE IF NOT EXISTS NYTCoronavirusPosts (post_id INTEGER PRI
 
 # insert data into NYTCoronavirusPosts table
 for i in range(len(post_urls)):
-    cur.execute("INSERT INTO NYTCoronavirusPosts (post_id, url, headline, pub_date, pub_date_simple, snippet, post_type) VALUES (?,?,?,?,?,?,?)", (i, post_urls[i], post_headlines[i], post_pub_dates[i], cv_post_simple_pub_dates[i], post_snippets[i], type_of_post[i]))
+    cur.execute("INSERT INTO NYTCoronavirusPosts (post_id, url, headline, pub_date, pub_date_simple, snippet, post_type) VALUES (?,?,?,?,?,?,?)", (i, post_urls[i], post_headlines[i], post_pub_dates[i], cv_post_simple_pub_dates[i], post_snippets[i], cv_type_of_post[i]))
 conn.commit()
 
 # get simple dates from all posts in collected NYT Data
