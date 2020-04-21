@@ -130,6 +130,26 @@ for url in nyt_data:
                     article_headlines.append(headline_transition)
         url_break += 1
 
+"""
+# check to eliminate any repeated articles before submitting them into database
+article_urls_no_dupes = []
+for art_urls in article_urls:
+    if art_urls not in article_urls_no_dupes:
+        article_urls_no_dupes.append(art_urls)
+article_headlines_no_dupes = []
+for art_hlines in article_headlines:
+    if art_hlines not in article_headlines_no_dupes:
+        article_headlines_no_dupes.append(art_hlines)
+article_pub_dates_no_dupes = []
+for art_pd in article_pub_dates
+    if art_pd not in article_pub_dates_no_dupes:
+        article_pub_dates_no_dupes.append(art_pd)
+article_snippets_no_dupes = []
+for art_snip in article_snippets:
+    if art_snip not in article_snippets_no_dupes:
+        article_snippets_no_dupes.append(art_snip)
+"""
+
 # create NYTCoronavirusArticles table to hold info about all articles with keyword coronavirus
 cur.execute("DROP TABLE IF EXISTS NYTCoronavirusArticles")
 cur.execute("CREATE TABLE IF NOT EXISTS NYTCoronavirusArticles (article_id INTEGER PRIMARY KEY, url STRING, headline STRING, pub_date STRING, snippet STRING)")
