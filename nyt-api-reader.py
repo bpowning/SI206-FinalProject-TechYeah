@@ -76,33 +76,58 @@ conn = sqlite3.connect(path + '/'+ "NYT.db")
 cur = conn.cursor()
 
 # set up lists for all NYT Coronavirus Articles
+months = ["oct", "nov", "dec", "jan", "feb", "mar", "apr"]
+date_dict = {'https://api.nytimes.com/svc/archive/v1/2019/10.json?api-key=GVoB95VLbFRPEUbpesKu3DqCTVritOM3': '2019-10',
+             'https://api.nytimes.com/svc/archive/v1/2020/11.json?api-key=GVoB95VLbFRPEUbpesKu3DqCTVritOM3': '2019-11',
+             'https://api.nytimes.com/svc/archive/v1/2020/12.json?api-key=GVoB95VLbFRPEUbpesKu3DqCTVritOM3': '2019-12',
+             'https://api.nytimes.com/svc/archive/v1/2020/1.json?api-key=GVoB95VLbFRPEUbpesKu3DqCTVritOM3': '2020-01',
+             'https://api.nytimes.com/svc/archive/v1/2020/2.json?api-key=GVoB95VLbFRPEUbpesKu3DqCTVritOM3': '2020-02',
+             'https://api.nytimes.com/svc/archive/v1/2020/3.json?api-key=GVoB95VLbFRPEUbpesKu3DqCTVritOM3': '2020-03',
+             'https://api.nytimes.com/svc/archive/v1/2020/4.json?api-key=GVoB95VLbFRPEUbpesKu3DqCTVritOM3': '2020-04'}
+articlesxmonth = []
+covidarticlesxmonth = []
+percentcovidarticles = []
+percent_covidxmonth = 0.000000
 article_urls = []
 article_headlines = []
 article_pub_dates = []
 article_snippets = []
+type_of_post = []
 url_break = 0
 for url in nyt_data:
     if url_break < 7:
+        x = nyt_data[url]['response']['meta']['hits']
+        articlesxmonth.append(x)
+        num_coronavirus_articles = 0
         for doc in nyt_data[url]['response']['docs']:
+            type_of_post.append(doc['document_type'])
             for keyword in doc['keywords']:
                 if keyword['value'] == 'Coronavirus (2019-nCoV)':
-                    if (doc['web_url'] not in article_urls) and (doc['headline']['main'] not in article_headlines) and (doc['snippet'] not in article_snippets):
+                    if (doc['web_url'] not in article_urls) and (doc['headline']['main'] not in article_headlines) and (doc['snippet'] not in article_snippets) and (doc['pub_date'] not in article_pub_dates):
                         article_urls.append(doc['web_url'])
                         article_pub_dates.append(doc['pub_date'])
                         article_snippets.append(doc['snippet'])
                         headline_transition = doc['headline']['main']
                         article_headlines.append(headline_transition)
+                        check_year_and_month = (doc['pub_date'])[0:7]
+                        if date_dict[url] == check_year_and_month:
+                            num_coronavirus_articles += 1
+        covidarticlesxmonth.append(num_coronavirus_articles)
         url_break += 1
+for i in range(len(articlesxmonth)):
+    percent_covidxmonth = (covidarticlesxmonth[i]/articlesxmonth[i])
+    percentcovidarticles.append(percent_covidxmonth)
 
 # create NYTCoronavirusArticles table to hold info about all articles with keyword coronavirus
 cur.execute("DROP TABLE IF EXISTS NYTCoronavirusArticles")
-cur.execute("CREATE TABLE IF NOT EXISTS NYTCoronavirusArticles (article_id INTEGER PRIMARY KEY, url STRING, headline STRING, pub_date STRING, snippet STRING)")
+cur.execute("CREATE TABLE IF NOT EXISTS NYTCoronavirusArticles (article_id INTEGER PRIMARY KEY, url STRING, headline STRING, pub_date STRING, snippet STRING, post_type STRING)")
 
 # insert data into NYTCoronavirusArticles table
 for i in range(len(article_urls)):
-    cur.execute("INSERT INTO NYTCoronavirusArticles (article_id, url, headline, pub_date, snippet) VALUES (?,?,?,?,?)", (i, article_urls[i], article_headlines[i], article_pub_dates[i], article_snippets[i]))
+    cur.execute("INSERT INTO NYTCoronavirusArticles (article_id, url, headline, pub_date, snippet, post_type) VALUES (?,?,?,?,?,?)", (i, article_urls[i], article_headlines[i], article_pub_dates[i], article_snippets[i], type_of_post[i]))
 conn.commit()
 
+"""
 # set up "articlesxmonth" list for all articles by month
 # set up "covidarticlesxmonth" list for all covid articles by month
 # set up "percentcovidarticles" list for percentage of articles about corona
@@ -120,13 +145,13 @@ for url in nyt_data:
         for doc in nyt_data[url]['response']['docs']:
             for keyword in doc['keywords']:
                 if keyword['value'] == 'Coronavirus (2019-nCoV)':
-                    if (doc['web_url'] in article_urls) and (doc['headline']['main'] in article_headlines) and (doc['snippet'] in article_snippets):
                         num_coronavirus_articles += 1
         covidarticlesxmonth.append(num_coronavirus_articles)
         url_break += 1
 for i in range(len(articlesxmonth)):
     percent_covidxmonth = (covidarticlesxmonth[i]/articlesxmonth[i])
     percentcovidarticles.append(percent_covidxmonth)
+"""
 
 # create NYTArticleData table to hold all data about coronavirus articles
 cur.execute("DROP TABLE IF EXISTS NYTArticleData")
