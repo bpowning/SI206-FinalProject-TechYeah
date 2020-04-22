@@ -119,7 +119,7 @@ def percentageOfConfirmed(c, cur = cur, conn = conn):
     cur.execute('SELECT Total_confirmed_global FROM Global')
     conn.commit()
     number_global = cur.fetchone()[0]
-    percentage = (number_of_confirmed / number_global)*100
+    percentage = (number_of_confirmed / number_global)
     return percentage
 
 
@@ -129,7 +129,7 @@ def percentageOfDeaths(c, cur = cur, conn = conn):
     cur.execute('SELECT Total_deaths_global FROM Global')
     conn.commit()
     number_global = cur.fetchone()[0]
-    percentage = (number_of_deaths / number_global)*100
+    percentage = (number_of_deaths / number_global)
     return percentage
 
 
@@ -140,7 +140,7 @@ def percentageOfRecovered(c, cur = cur, conn = conn):
     cur.execute('SELECT Total_recovered_global FROM Global')
     conn.commit()
     number_global = cur.fetchone()[0]
-    percentage = (number_of_recovered / number_global)*100
+    percentage = (number_of_recovered / number_global)
     return percentage
 
 
