@@ -4,7 +4,8 @@ import requests
 import sqlite3
 import re
 from bs4 import BeautifulSoup
-# import matplotlib.pyplot as plt
+import matplotlib
+import matplotlib.pyplot as plt
 
 # get directory path and create cache file
 path = os.path.dirname(os.path.realpath(__file__))
@@ -210,11 +211,12 @@ total_engineer = num_listings_by_type("analyst")
 
 # creating visualizations
 
-#fig = plt.figure(figsize=(10,5))
-#ax = fig.add_subplot(111)
-#ax.bar(months[:4], remote2020_list, color = 'lightblue')
-#ax.set_xlabel('month')
-#ax.set_ylabel('number of remote job listings')
-#ax.set_title('Remote job listings in 2020 by month ')
-#fig.savefig('test.png')
-#plt.show()
+# remote jobs by month 2020
+fig = plt.figure(figsize=(10,5))
+ax = fig.add_subplot(111)
+ax.bar(months[:4], remote2020_list, color = 'lightblue')
+ax.set_xlabel('month')
+ax.set_ylabel('number of remote job listings')
+ax.set_title('Remote job listings in 2020 by month ')
+fig.savefig('remote2020.png')
+plt.show()
