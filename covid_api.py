@@ -69,7 +69,7 @@ for x in countries:
 
 
 #for i in range(len(country_lst)):
-    cur.execute("INSERT INTO Countries (total_confirmed, country, country_code, total_deaths, total_recovered) VALUES (?, ?, ?, ?, ?)",(total_confirmed, country, country_code, total_deaths_, total_recovered))
+    cur.execute("INSERT INTO Countries (country, country_code, total_confirmed, total_deaths, total_recovered) VALUES (?, ?, ?, ?, ?)",(country, country_code, total_confirmed, total_deaths_, total_recovered))
 conn.commit()
 
 
@@ -86,6 +86,93 @@ cur.execute("INSERT INTO Global (total_confirmed_global, total_deaths_global, to
 
 
 conn.commit()
+
+# =======================================================================================================================================================================================================================================================
+
+# functions for calculations:
+
+#retrieve the number of confirmed cases
+def numberOfConfirmed(c, cur = cur, conn = conn):
+    cur.execute('SELECT Total_confirmed FROM Countries WHERE Country = ?', (c))
+    conn.commit()
+    return cur.fetchone()
+
+
+#retrieve the number of deaths
+def numberOfDeaths(c, cur = cur, conn = conn):
+    cur.execute('SELECT Total_deaths FROM Countries WHERE Country = ?', (c))
+    conn.commit()
+    return cur.fetchone()
+
+
+#retrieve the number of recovered
+def numberOfRecovered(c, cur = cur, conn = conn):
+    cur.execute('SELECT Total_recovered FROM Countries WHERE Country = ?', (c))
+    conn.commit()
+    return cur.fetchone()
+
+
+
+#calculate the percentage of confirmed of the global cases
+def percentageOfConfirmed(c, cur = cur, conn = conn):
+    number_of_confirmed = numberOfConfirmed(c)
+    cur.execute('SELECT Total_confirmed_global FROM Global')
+    conn.commit()
+    number_global = cur.fetchone()
+    percentage = (number_of_confirmed / number_global)*100
+    return str(percentage) + '%'
+
+
+#calculate the percentage of global deaths
+def percentageOfDeaths(c, cur = cur, conn = conn):
+    number_of_deaths = numberOfDeaths(c)
+    cur.execute('SELECT Total_deaths_global FROM Global')
+    conn.commit()
+    number_global = cur.fetchone()
+    percentage = (number_of_deaths / number_global)*100
+    return str(percentage) + '%'
+
+
+
+#calculate the percentage of global recovered
+def percentageOfRecovered(c, cur = cur, conn = conn):
+    number_of_recovered = numberOfRecovered(c)
+    cur.execute('SELECT Total_recovered_global FROM Global')
+    conn.commit()
+    number_global = cur.fetchone()
+    percentage = (number_of_recovered / number_global)*100
+    return str(percentage) + '%'
+
+
+
+#=======================================================================================================================================================================================================================================================
+
+# code to use these functions to calculate stuff from the data base
+
+
+#total confirmed cases in the united states
+print(numberOfConfirmed('United States of America'))
+
+#total deaths in the united states
+print(numberOfDeaths('United States of America'))
+
+#total recovered covid cases in the united states
+print(numberOfRecovered('United States of America'))
+
+
+
+#percentage of united staes confirmed cases of the total global confirmed cases
+print(percentageOfConfirmed('United States of America'))
+
+
+#percentage of united staes deaths  of the total global deaths
+print(percentageOfDeaths('United States of America'))
+
+
+#percentage of united staes recovered cases of the total global recovered cases
+print(percentageOfRecovered('United States of America'))
+
+
 
 
 
