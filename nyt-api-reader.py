@@ -101,7 +101,9 @@ for url in nyt_data:
         for doc in nyt_data[url]['response']['docs']:
             all_post_simple_pub_dates.append((doc['pub_date'])[0:7])
             for keyword in doc['keywords']:
-                if keyword['value'] == 'Coronavirus (2019-nCoV)':
+                # checking for mentions of Coronavirus in keywords, headlines and urls specifically
+                # (and not snippets) as certain snippets might mention coronavirus but not about it.
+                if (keyword['value'] == 'Coronavirus (2019-nCoV)') or (('Coronavirus' or 'coronavirus' or 'COVID-19') in doc['headline']['main']) or ('coronavirus' in doc['web_url']):
                     if (doc['web_url'] not in post_urls) and (doc['headline']['main'] not in post_headlines) and (doc['snippet'] not in post_snippets) and (doc['pub_date'] not in post_pub_dates):
                         post_urls.append(doc['web_url'])
                         post_pub_dates.append(doc['pub_date'])
