@@ -93,23 +93,23 @@ conn.commit()
 
 #retrieve the number of confirmed cases
 def numberOfConfirmed(c, cur = cur, conn = conn):
-    cur.execute('SELECT Total_confirmed FROM Countries WHERE Country = ?', (c))
+    cur.execute('SELECT Total_confirmed FROM Countries WHERE Country = ?', (c,))
     conn.commit()
-    return cur.fetchone()
+    return cur.fetchone()[0]
 
 
 #retrieve the number of deaths
 def numberOfDeaths(c, cur = cur, conn = conn):
-    cur.execute('SELECT Total_deaths FROM Countries WHERE Country = ?', (c))
+    cur.execute('SELECT Total_deaths FROM Countries WHERE Country = ?', (c,))
     conn.commit()
-    return cur.fetchone()
+    return cur.fetchone()[0]
 
 
 #retrieve the number of recovered
 def numberOfRecovered(c, cur = cur, conn = conn):
-    cur.execute('SELECT Total_recovered FROM Countries WHERE Country = ?', (c))
+    cur.execute('SELECT Total_recovered FROM Countries WHERE Country = ?', (c,))
     conn.commit()
-    return cur.fetchone()
+    return cur.fetchone()[0]
 
 
 
@@ -118,9 +118,9 @@ def percentageOfConfirmed(c, cur = cur, conn = conn):
     number_of_confirmed = numberOfConfirmed(c)
     cur.execute('SELECT Total_confirmed_global FROM Global')
     conn.commit()
-    number_global = cur.fetchone()
+    number_global = cur.fetchone()[0]
     percentage = (number_of_confirmed / number_global)*100
-    return str(percentage) + '%'
+    return percentage
 
 
 #calculate the percentage of global deaths
@@ -128,9 +128,9 @@ def percentageOfDeaths(c, cur = cur, conn = conn):
     number_of_deaths = numberOfDeaths(c)
     cur.execute('SELECT Total_deaths_global FROM Global')
     conn.commit()
-    number_global = cur.fetchone()
+    number_global = cur.fetchone()[0]
     percentage = (number_of_deaths / number_global)*100
-    return str(percentage) + '%'
+    return percentage
 
 
 
@@ -139,9 +139,9 @@ def percentageOfRecovered(c, cur = cur, conn = conn):
     number_of_recovered = numberOfRecovered(c)
     cur.execute('SELECT Total_recovered_global FROM Global')
     conn.commit()
-    number_global = cur.fetchone()
+    number_global = cur.fetchone()[0]
     percentage = (number_of_recovered / number_global)*100
-    return str(percentage) + '%'
+    return percentage
 
 
 
