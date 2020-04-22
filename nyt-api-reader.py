@@ -4,6 +4,9 @@ import os
 import requests
 import re
 
+# NYT API Reader accessed to get all articles and articles created per month about
+# the COVID-19 epidemic
+
 # get directory path and create cache file
 path = os.path.dirname(os.path.realpath(__file__))
 nyt_file = path + '/' + "nyt_covid_data.json"
@@ -91,8 +94,8 @@ cv_type_of_post = []
 # url_break used to stop url loop before it hits error handling urls (Error 400)
 url_break = 0
 
-# collect total number of posts per month and all simple_pub_dates for all articles
-# collect url, headline, pub_date, simple_pub_date, snippet and post_type for each article with
+# collect total number of posts per month and all simple_pub_dates for all posts
+# collect url, headline, pub_date, simple_pub_date, snippet and post_type for each post with
 # the keyword 'Coronavirus (2019-nCoV)'
 for url in nyt_data:
     if url_break < 7:
@@ -140,8 +143,8 @@ def getNYTCoronaPostsNumberbyMonth(chosen_pub_date, cur, conn):
 
 # add number of posts with keyword 'Coronavirus (2019-nCoV)' to covidpostsxmonth by specific month
 for date in simple_date_list:
-    list_of_arts = getNYTCoronaPostsNumberbyMonth(date, cur, conn)
-    covidpostsxmonth.append(len(list_of_arts))
+    list_of_posts = getNYTCoronaPostsNumberbyMonth(date, cur, conn)
+    covidpostsxmonth.append(len(list_of_posts))
 
 # create percentages list based off of covidpostsxmonth[i]
 for i in range(len(postsxmonth)):
