@@ -5,6 +5,8 @@ import os
 import requests
 import operator
 import sqlite3
+import matplotlib
+import matplotlib.pyplot as plt
 
 path = os.path.dirname(os.path.realpath(__file__))
 covid_file = path + '/' + "covid_data.json"
@@ -173,7 +175,35 @@ print(percentageOfDeaths('United States of America'))
 print(percentageOfRecovered('United States of America'))
 
 
+# visualizations 
 
+cur.execute("SELECT coronavirus_hits FROM NYTPostData")
+hits = cur.fetchall()
+total = 0
+for hit in hits:
+    total += hit[0]
+numConfirmed = numberOfConfirmed('United States of America')
 
+x = ["NYT mentions", "Confirmed Cases"]
+y = [total, numConfirmed]
 
+fig = plt.figure(figsize=(10,5))
+ax = fig.add_subplot(111)
+ax.bar(x, y, color = 'red')
+ax.set_title('Number of US cases vs. mentions in NYT')
+fig.savefig('casesVSmentions.png')
+plt.show()
 
+cur.execute("SELECT total_deaths_global FROM Global")
+global_deaths = cur.fetchone()[0]
+labels = ["United States", "Global"]
+sizes = [numberOfDeaths('United States of America'), global_deaths]  
+explode = (0.1, 0)
+
+fig2 = plt.figure(figsize=(10,5))
+ax2 = fig2.add_subplot(111)
+ax2.pie(sizes, explode = explode, labels = labels, autopct = '%1.1f%%', shadow = True, startangle = 90)
+ax2.axis('equal')
+ax2.set_title('Percentage of US COVID-19 deaths')
+fig2.savefig('percentage_deaths.png')
+plt.show()
