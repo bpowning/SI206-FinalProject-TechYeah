@@ -3,11 +3,8 @@ import json
 import os
 import requests
 import re
-<<<<<<< HEAD
 import matplotlib
 import matplotlib.pyplot as plt
-=======
->>>>>>> ecc91ba84d06d0f8de11a3506d1a15c54924130e
 
 # NYT API Reader accessed to get all articles and articles created per month about
 # the COVID-19 epidemic
@@ -163,7 +160,6 @@ cur.execute("CREATE TABLE IF NOT EXISTS NYTPostData (month_id INTEGER PRIMARY KE
 # insert data into NYTPostData table
 for i in range(len(postsxmonth)):
     cur.execute("INSERT INTO NYTPostData (month_id, month, total_hits, coronavirus_hits, percent_of_covid_posts) VALUES (?,?,?,?,?)", (i, months[i], postsxmonth[i], covidpostsxmonth[i], percentcovidposts[i]))
-<<<<<<< HEAD
 conn.commit()
 
 cur.execute("SELECT month, percent_of_covid_posts FROM NYTPostData")
@@ -184,6 +180,3 @@ ax.set_ylabel('percentage of COVID-19 mentions')
 ax.set_title('Percentage of New York Times COVID-19 mentions by month')
 fig.savefig('percent_mentions.png')
 plt.show()
-=======
-conn.commit()
->>>>>>> ecc91ba84d06d0f8de11a3506d1a15c54924130e
