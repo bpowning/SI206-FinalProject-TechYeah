@@ -6,10 +6,6 @@ import re
 from bs4 import BeautifulSoup
 import matplotlib
 import matplotlib.pyplot as plt
-<<<<<<< HEAD
-import plotly.graph_objects as go
-=======
->>>>>>> ecc91ba84d06d0f8de11a3506d1a15c54924130e
 
 # get directory path and create cache file
 path = os.path.dirname(os.path.realpath(__file__))
@@ -223,23 +219,4 @@ ax.set_xlabel('month')
 ax.set_ylabel('number of remote job listings')
 ax.set_title('Remote job listings in 2020 by month ')
 fig.savefig('remote2020.png')
-<<<<<<< HEAD
-#plt.show()
-
-# remote job listings vs. NYT mentions by month 2020
-cur.execute("SELECT coronavirus_hits FROM NYTPostData")
-hits = cur.fetchall()
-lst = []
-for hit in hits[3:]:
-    lst.append(hit[0]/100)
-
-
-fig2 = go.Figure(data = [
-    go.Bar(name = "NYT", x=months[:4], y=lst, marker_color = 'rgb(55,83,109)'),
-    go.Bar(name = "Jobs", x=months[:4], y=remote2020_list, marker_color = 'rgb(26,118,255)')])
-fig2.update_layout(title = 'Remote job listings vs NYT mentions (in hundreds) by month 2020', xaxis_tickangle=-45, barmode='group',
-                  xaxis = {'tickmode':'linear'})
-fig2.show()
-=======
 plt.show()
->>>>>>> ecc91ba84d06d0f8de11a3506d1a15c54924130e
