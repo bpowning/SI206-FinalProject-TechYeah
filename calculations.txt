@@ -1,0 +1,44 @@
+total confirmed cases in the united states
+numberOfConfirmed('United States of America') = 758479
+
+total confirmed deaths in US
+numberOfDeaths('United States of America') = 40644
+
+total recovered covid cases in the united states
+numberOfRecovered('United States of America') = 70337
+
+percentage of united staes confirmed cases of the total global confirmed cases
+percentageOfConfirmed('United States of America') = .3160
+
+
+percentage of united staes deaths  of the total global deaths
+percentageOfDeaths('United States of America') = .2463
+
+percentage of united staes recovered cases of the total global recovered cases
+percentageOfRecovered('United States of America') .1128
+
+total remote listings by year
+remote2018 = yearly_total(months, 2018) = 11
+remote2019 = yearly_total(months, 2019) = 1
+remote2020 = yearly_total(months[:4], 2020) = 13
+
+total remote listings
+total_remote = get_total_remote() = 25
+
+percentage of remote listings
+percent_remote = get_percent_remote() = .2066
+
+total listings by type
+total_analyst = num_listings_by_type("analyst") = 3
+total_python = num_listings_by_type("python") = 55
+total_developer = num_listings_by_type("developer") = 5
+total_engineer = num_listings_by_type("analyst") = 3
+
+percent of corona virus hits by month in NYT starting Oct 2019
+Oct- 0
+Nov- 0
+Dec- 0
+Jan- .0128
+Feb- .0514
+Mar- .2535
+Apr- .28
