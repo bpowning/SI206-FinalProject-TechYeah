@@ -6,6 +6,7 @@ import re
 from bs4 import BeautifulSoup
 import matplotlib
 import matplotlib.pyplot as plt
+import numpy as np
 
 # get directory path and create cache file
 path = os.path.dirname(os.path.realpath(__file__))
@@ -219,4 +220,25 @@ ax.set_xlabel('month')
 ax.set_ylabel('number of remote job listings')
 ax.set_title('Remote job listings in 2020 by month ')
 fig.savefig('remote2020.png')
+plt.show()
+
+# remote jobs by month 2020 and NYT covid mentions by month 2020 (in hundreds)
+cur.execute('SELECT coronavirus_hits FROM NYTPostData')
+hits_by_month = cur.fetchall()
+hits = []
+for hit in hits_by_month[3:]:
+    hits.append(hit[0]/100)
+
+fig, ax = plt.subplots()
+N = 4
+width = 0.35
+ind = np.arange(N)
+b1 = ax.bar(ind, remote2020_list, width, color='lightblue')
+b2 = ax.bar(ind + width, hits, width, color='darkblue')
+ax.set_xticks(ind + width / 2)
+ax.set_xticklabels(('Jan', 'Feb', 'Mar', 'Apr'))
+ax.legend((b1[0],b2[0]), ('# of NYT COVID-19 Mentions', '# of remote job listings'))
+ax.autoscale_view()
+ax.set(xlabel='month', title='Remote job listings vs NYT mentions (in hundreds) by month 2020')
+fig.savefig("remoteListings_NYTmentions.png")
 plt.show()

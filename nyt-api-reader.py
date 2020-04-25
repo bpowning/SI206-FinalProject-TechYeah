@@ -163,7 +163,7 @@ for i in range(len(postsxmonth)):
 conn.commit()
 
 cur.execute("SELECT month, percent_of_covid_posts FROM NYTPostData")
-percents = cur.fetchall()
+percents = cur.fetchall()[]
 
 months = []
 percent_lists = []
@@ -180,3 +180,4 @@ ax.set_ylabel('percentage of COVID-19 mentions')
 ax.set_title('Percentage of New York Times COVID-19 mentions by month')
 fig.savefig('percent_mentions.png')
 plt.show()
+
