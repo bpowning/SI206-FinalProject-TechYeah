@@ -163,7 +163,7 @@ for i in range(len(postsxmonth)):
 conn.commit()
 
 cur.execute("SELECT month, percent_of_covid_posts FROM NYTPostData")
-percents = cur.fetchall()[]
+percents = cur.fetchall()
 
 months = []
 percent_lists = []
